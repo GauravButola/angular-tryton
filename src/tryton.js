@@ -316,12 +316,13 @@ angular.module('openlabs.angular-tryton', ['ngStorage'])
         </file>
       </example>
   **/
-  this.rpc = function(method, params, database) {
+  this.rpc = function(method, params, database, cache) {
     var request = $http.post(
       tryton.serverUrl + (database || ''),
       {
         'method': method,
-        'params': params || []
+        'params': params || [],
+        'cache': cache
       }
     );
     return request;
@@ -550,14 +551,16 @@ angular.module('openlabs.angular-tryton', ['ngStorage'])
                             method.
                             Note: JavaScript object should be JSON serializable.
                             (Ex: `{company: 1}`)
+    @param {boolean} cache If true, the $http request will be cached.
 
   **/
-  this.rpc = function(_method, _params, _context) {
+  this.rpc = function(_method, _params, _context, cache) {
     // Make a remote procedure call to tryton with the current user ID
     // session and the database in the session
 
     // Construct parameters: [userId, sessionId, param1, param2,... context]
     var params = [session.userId, session.sessionId].concat((_params || []));
+    cache = cache || false;
 
     var requestContext = angular.copy((session.context || {}));
     if (_context !== undefined) {
@@ -565,7 +568,7 @@ angular.module('openlabs.angular-tryton', ['ngStorage'])
     }
     params.push(requestContext);
 
-    return tryton.rpc(_method, params, session.database);
+    return tryton.rpc(_method, params, session.database, cache);
   };
 
   /**
